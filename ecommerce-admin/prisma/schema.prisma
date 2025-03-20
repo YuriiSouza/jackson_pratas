@@ -88,3 +88,25 @@ model Authenticator {
  
   @@id([userId, credentialID])
 }
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  price       Decimal  @db.Decimal(10,2)
+  stock       Int      @default(0)
+  // categoryId  Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique @db.VarChar(255)
+  // products  Product[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
