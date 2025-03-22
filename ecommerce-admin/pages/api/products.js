@@ -12,6 +12,7 @@ export default async function handle(req, res) {
           id: id,
         }
       })
+      console.log(products);
       res.json(products);
 
     } else {
