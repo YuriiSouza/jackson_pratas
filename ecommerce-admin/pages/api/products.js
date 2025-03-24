@@ -1,25 +1,27 @@
 import { prisma } from "@/lib/prisma";
+import { useRouter } from "next/router";
 
 export default async function handle(req, res) {
   const {method} = req;
 
-
-
+  
+  
   if (method == 'GET') {
+    const {id} = req.query;
+
     if (req.query?.id) {
       const products = await prisma.product.findUnique({
         where: {
-          id: id,
+          id: Number(id),
         }
       })
-      console.log(products);
+
       res.json(products);
 
     } else {
       const products = await prisma.product.findMany();
       res.json(products);
     }
-    
   }
 
   if (method == 'POST') {
