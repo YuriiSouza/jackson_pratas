@@ -1,9 +1,10 @@
 import Layout from "@/components/layout";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ProductForm({
+  id,
   name: existName,
   description: existDescription,
   price: existPrice,
@@ -15,17 +16,36 @@ export default function ProductForm({
   const [price, setPrice] = useState(existPrice
      || '');
   const [stock, setStock] = useState(exitStock || '');
-  const [categoryProduct, setCategory] = useState(existCategory || '');
+  const [category, setCategory] = useState(existCategory || '');
+  const [allCategories, setAllCategories] = useState([])
   const [goToProducts, setGoToProducts] = useState(false);
   const router = useRouter();
 
-  function createProduct(ev) {
+  useEffect(() => {
+    axios.get('/api/categories')
+      .then(response => setAllCategories(response.data))
+      .catch(error => console.error("Erro ao buscar categorias", error));
+  }, []);
+
+  useEffect(() => {
+    console.log(allCategories);
+  }, [allCategories]); 
+
+  function saveProduct(ev) {
     ev.preventDefault();
 
-    const data = {name, description, price};
-    axios.post('/api/products', data);
-    
-    setGoToProducts(true);
+    if(id) {
+      //update
+      const data = {name, description, price, stock, category};
+      axios.put('/api/products', {...data, id});
+      
+      setGoToProducts(true);
+    } else {
+      const data = {name, description, price, stock, category};
+      axios.post('/api/products', data);
+      
+      setGoToProducts(true);
+    }
   }
 
   if(goToProducts) {
@@ -33,7 +53,7 @@ export default function ProductForm({
   }
   
   return (
-      <form onSubmit={createProduct}>
+      <form onSubmit={saveProduct}>
         
         <label>Nome do Produto</label>
         <input 
@@ -66,13 +86,21 @@ export default function ProductForm({
           onChange={ev => setStock(ev.target.value)}
         />
       
-        <label>Category</label>
-        <input 
-          type="text"
-          placeholder="Category" 
-          value={categoryProduct} 
-          onChange={ev => setCategory(ev.target.value)}
-        />
+        <div className="flex flex-col pb-10 w-55">
+          <label>Categoria</label>
+          <select
+            value={category}
+            onChange={(ev) => setCategory(ev.target.key)}
+            required
+          >
+            <option className="text-blue-900" value="">Selecione uma categoria</option>
+              {allCategories.map((cat) => (
+                <option key={cat.id} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
+          </select>
+        </div>
 
         <button type="submit" className="btn-primary">Salvar</button>
       </form>
