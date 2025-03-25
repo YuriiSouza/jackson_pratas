@@ -10,7 +10,7 @@ export default async function handle(req, res) {
       if (id) {
         const category = await prisma.category.findUnique({
           where: {
-            id: parseInt(id, 10), // Converte id para inteiro corretamente
+            id: Number(id),
           },
         });
 
@@ -69,6 +69,29 @@ export default async function handle(req, res) {
       return res.status(500).json({ error: "Erro ao atualizar categoria" });
     }
   }
+
+  if (method === "DELETE") {
+    try {
+      const { id } = req.query;
+      var category = ''
+
+      if(id) {
+        category = await prisma.category.delete({
+          where: {
+            id: Number(id),
+          },
+        })
+      }
+
+      return res.status(200).json(category)
+
+    } catch (error) {
+      console.error("Erro ao deletar a categoria", error);
+      return res.status(500).json({ error: "Erro ao  deletar a categoria"})
+    }
+
+  }
+
 
   return res.status(405).json({ error: "Método não permitido" });
 }

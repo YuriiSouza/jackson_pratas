@@ -74,12 +74,13 @@ export default async function handle(req, res) {
   if (method === "DELETE") {
     try {
       const { id } = req.query;
-      
+      var product = ''
+
       if(id) {
-        const product = await prisma.product.delete({
+        product = await prisma.product.delete({
           where: {
-            id: id,
-          }
+            id: Number(id),
+          },
         })
       }
 

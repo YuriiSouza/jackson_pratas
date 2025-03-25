@@ -1,9 +1,12 @@
 import Layout from "@/components/layout";
+import ModalDelete from "@/components/modalDeleteItem";
 import axios from "axios";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Categories(){
+  const [show, setShow] = useState(false);
+  const [info, setInfo] = useState([]);
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
@@ -36,13 +39,20 @@ export default function Categories(){
                   </svg>
                   Editar
                 </Link>
-                <Link href={'/categories/delete/'+category.id}>
+                <Link href={''}
+                  onClick={(ev) => {
+                    ev.preventDefault()
+                    setShow(true);
+                    setInfo({ word: "categories", id: category.id });
+                  }}
+                >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                   </svg>
-
                   Excluir
                 </Link>
+
+                {show && <ModalDelete {...info} onClose={() => setShow(false)} />}
               </td>
             </tr>
           ))}

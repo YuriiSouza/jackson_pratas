@@ -7,7 +7,8 @@ import { useEffect, useState } from "react";
 export default function Products() {
   const [show, setShow] = useState(false);
   const [products, setProducts] = useState([]);
-  const [info, setInfo] = useState(null);
+  const [info, setInfo] = useState([]);
+
 
   useEffect(() => {
     axios.get("/api/products").then((response) => {
@@ -43,9 +44,10 @@ export default function Products() {
                 </Link>
 
                 <Link href={''}
-                  onClick={() => {
+                  onClick={(ev) => {
+                    ev.preventDefault()
                     setShow(true);
-                    setInfo({ type: "products", id: product.id });
+                    setInfo({ word: "products", id: product.id });
                   }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">

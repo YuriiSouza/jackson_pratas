@@ -7,11 +7,14 @@ export default function ModalDelete({
 }) {
   const router = useRouter();
 
-  async function deleteItem() {
+  async function deleteItem(word, id_) {
     try {
-      console.log(`/api/${wordReference}?id=${id}`)
-      await axios.delete(`/api/${wordReference}?id=${id}`);
-      alert(`${wordReference} excluído com sucesso!`);
+      await axios.delete(`/api/${wordReference}?id=${id}`).then((response) => {
+        if(response.status == 200) {
+          router.reload()
+        }
+      })
+      
     } catch (error) {
       console.error("Erro ao deletar:", error);
       alert("Erro ao deletar o item.");
@@ -43,7 +46,10 @@ export default function ModalDelete({
 
             {/* Botão para confirmar exclusão */}
             <button
-              onClick={deleteItem}
+                onClick={(ev) => {
+                  deleteItem(wordReference, id)}
+                }
+              
               className="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
             >
               Excluir
