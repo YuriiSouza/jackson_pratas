@@ -71,5 +71,27 @@ export default async function handle(req, res) {
     }
   }
 
+  if (method === "DELETE") {
+    try {
+      const { id } = req.query;
+      
+      if(id) {
+        const product = await prisma.product.delete({
+          where: {
+            id: id,
+          }
+        })
+      }
+
+      return res.status(200).json(product)
+
+    } catch (error) {
+      console.error("Erro ao deletar o produto", error);
+      return res.status(500).json({ error: "Erro ao  deletar o produto"})
+    }
+
+  }
+
   return res.status(405).json({ error: "Método não permitido" });
 }
+
