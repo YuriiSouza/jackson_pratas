@@ -9,7 +9,8 @@ export default function ProductForm({
   description: existDescription,
   price: existPrice,
   stock: exitStock,
-  category: existCategory
+  category: existCategory,
+  images
 }) {
   const [name, setName] = useState(existName || '');
   const [description, setDescription] = useState(existDescription || '');
@@ -45,6 +46,22 @@ export default function ProductForm({
       axios.post('/api/products', data);
       
       setGoToProducts(true);
+    }
+  }
+
+  async function uploadImages(ev) {
+    const files = ev.target?.files;
+    if (files?.length > 0) {
+      const data = new FormData();
+      
+      for (const file of files) {
+        data.append('file', file)
+      }
+
+      const res = await axios.post('/api/uploadImages', data, {
+        headers: {'Content-Type': 'multiparty/form-data'}
+      });
+      console.log(res.data);
     }
   }
 
@@ -100,6 +117,24 @@ export default function ProductForm({
                 </option>
               ))}
           </select>
+        </div>
+
+        <label>
+          Fotos
+        </label>
+        <div className="mb-2">
+          <label className="w-32 h-32 curson-pointer text-center flex items-center justify-center text-sm gap-1 text-gray-500 rounded-lg bg-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+            </svg>
+            <div>
+              Upload
+            </div>
+            <input type="file" className="hidden" onChange={uploadImages}></input>
+          </label>
+          {!images?.length && (
+            <div>Sem fotos</div>
+          )}
         </div>
 
         <button type="submit" className="btn-primary">Salvar</button>
