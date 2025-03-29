@@ -83,6 +83,11 @@ model Product {
   description String?  @db.Text
   price       Decimal  @db.Decimal(10, 2)
   stock       Int      @default(0)
+  categoryId  Int
+  Images      FileImagesProduct[]
+
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -90,6 +95,18 @@ model Product {
 model Category {
   id        Int      @id @default(autoincrement())
   name      String   @unique @db.VarChar(255)
+  product   Product[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model FileImagesProduct {
+    id           String   @id @default(uuid())
+    bucket       String
+    fileName     String   @unique
+    originalName String
+    size         Int
+    productId    Int
+    createdAt    DateTime @default(now())
+    products     Product @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
