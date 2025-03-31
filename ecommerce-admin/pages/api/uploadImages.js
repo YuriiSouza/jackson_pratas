@@ -3,7 +3,7 @@ import { s3Client } from '@/lib/s3';
 import fs from 'fs';
 import mime, { contentType } from 'mime-types';
 
-const bucketName = 'jackimages'
+const bucketName = 'pratasimages'
 
 export default async function handle(req, res) {
   const form = new multiparty.Form();
@@ -27,7 +27,8 @@ export default async function handle(req, res) {
       const acl = 'public-read';
       const contentType = mime.lookup(file.path)
 
-      await s3Client.send(new PutOb)
+      
+      // await s3Client.send(new PutOb)
     
       const link = `http://${bucketName}.localhost:9000/${newFilename}`;
     

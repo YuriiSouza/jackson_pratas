@@ -19,6 +19,7 @@ export default function ProductForm({
   const [stock, setStock] = useState(exitStock || '');
   const [category, setCategory] = useState(existCategory || '');
   const [allCategories, setAllCategories] = useState([])
+  const [allImages, setAllImages] = useState([])
   const [goToProducts, setGoToProducts] = useState(false);
   const router = useRouter();
 
@@ -26,11 +27,13 @@ export default function ProductForm({
     axios.get('/api/categories')
       .then(response => setAllCategories(response.data))
       .catch(error => console.error("Erro ao buscar categorias", error));
-  }, []);
 
-  useEffect(() => {
-    console.log(allCategories);
-  }, [allCategories]); 
+    // axios.get('/api/')
+    }, []);
+
+  // useEffect(() => {
+  //   console.log(allCategories);
+  // }, [allCategories]); 
 
   function saveProduct(ev) {
     ev.preventDefault();
@@ -61,6 +64,8 @@ export default function ProductForm({
       const res = await axios.post('/api/uploadImages', data, {
         headers: {'Content-Type': 'multiparty/form-data'}
       });
+
+      console.log(data)
       console.log(res.data);
     }
   }
@@ -122,7 +127,7 @@ export default function ProductForm({
         <label>
           Fotos
         </label>
-        <div className="mb-2">
+        <div className="mb-2 flex flex-row pb-10 place-items-center gap-4">
           <label className="w-32 h-32 curson-pointer text-center flex items-center justify-center text-sm gap-1 text-gray-500 rounded-lg bg-gray-200">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
@@ -132,9 +137,14 @@ export default function ProductForm({
             </div>
             <input type="file" className="hidden" onChange={uploadImages}></input>
           </label>
-          {!images?.length && (
-            <div>Sem fotos</div>
-          )}
+          <div>
+            {!images?.length && (
+              <div>Sem fotos</div>
+            )}
+            {images?.length && (
+              
+             )}
+          </div>
         </div>
 
         <button type="submit" className="btn-primary">Salvar</button>

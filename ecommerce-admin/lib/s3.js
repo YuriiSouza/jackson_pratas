@@ -1,7 +1,7 @@
 import * as Minio from 'minio';
-import type internal from 'stream';
+// import type internal from 'stream';
 
-const s3Client = new Minio.Client({
+export const s3Client = new Minio.Client({
   endPoint: process.env.S3_ENDPOINT,
   port: process.env.S3_PORTS3,
   accessKey: process.env.S3_ACESS_KEY,
@@ -9,11 +9,11 @@ const s3Client = new Minio.Client({
   useSSL: false
 })
 
-export async function createBucketIfNotExists(bucketName: String) {
+export async function createBucketIfNotExists(bucketName) {
   const bucketExists = await s3Client.bucketExists(bucketName)
   if(!bucketExists) {
     await s3Client.makeBucket(bucketName)
   }
 }
 
-export { s3Client };
+// export { s3Client };
