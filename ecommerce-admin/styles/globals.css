@@ -44,3 +44,7 @@ select {
 option {
   @apply text-gray-400
 }
+
+img {
+  max-height: 100%;
+}

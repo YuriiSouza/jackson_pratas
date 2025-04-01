@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import type { FileProps } from '~/utils/types'
-import { db } from '~/server/db'
  
 const LIMIT_FILES = 10
  
@@ -19,13 +18,20 @@ const handler = async (req, res) => {
     },
   })
   
-  const filesWithProps = files.map((file) => ({
-    id: file.id,
-    originalFileName: file.originalName,
-    fileSize: file.size,
-  }))
- 
-  return res.status(200).json(filesWithProps)
+
+  const links = [];
+  
+  for (const file of files) {
+    const bucketName = file.bucket;
+    const newFilename = file.fileName;
+
+  
+    const link = `http://${bucketName}.localhost:9000/${newFilename}`;
+  
+    links.push(link);
+  }
+
+  return res.status(200).json(links)
 }
  
 export default handler

@@ -10,7 +10,7 @@ export default function ProductForm({
   price: existPrice,
   stock: exitStock,
   category: existCategory,
-  images
+  images: existImages
 }) {
   const [name, setName] = useState(existName || '');
   const [description, setDescription] = useState(existDescription || '');
@@ -18,8 +18,9 @@ export default function ProductForm({
      || '');
   const [stock, setStock] = useState(exitStock || '');
   const [category, setCategory] = useState(existCategory || '');
-  const [allCategories, setAllCategories] = useState([])
-  const [allImages, setAllImages] = useState([])
+  const [images, setImages] = useState(existImages || []);
+  const [allCategories, setAllCategories] = useState([]);
+  const [allImages, setAllImages] = useState([]);
   const [goToProducts, setGoToProducts] = useState(false);
   const router = useRouter();
 
@@ -30,10 +31,6 @@ export default function ProductForm({
 
     // axios.get('/api/')
     }, []);
-
-  // useEffect(() => {
-  //   console.log(allCategories);
-  // }, [allCategories]); 
 
   function saveProduct(ev) {
     ev.preventDefault();
@@ -56,17 +53,20 @@ export default function ProductForm({
     const files = ev.target?.files;
     if (files?.length > 0) {
       const data = new FormData();
-      
+  
       for (const file of files) {
-        data.append('file', file)
+        data.append("files[]", file);
       }
-
-      const res = await axios.post('/api/uploadImages', data, {
-        headers: {'Content-Type': 'multiparty/form-data'}
-      });
-
-      console.log(data)
-      console.log(res.data);
+  
+      try {
+        const res = await axios.post(`/api/uploadImages?id=${id}`, data, {
+          headers: {'Content-Type': 'multiparty/form-data'}
+        });
+  
+        setImages((oldImages) => [...oldImages, ...res.data.images]);
+      } catch (error) {
+        console.error("Erro no upload de imagem:", error);
+      }
     }
   }
 
@@ -141,9 +141,11 @@ export default function ProductForm({
             {!images?.length && (
               <div>Sem fotos</div>
             )}
-            {images?.length && (
-              
-             )}
+            {!!images?.length && images.map(link => (
+              <div key={link}> 
+                <img className="h-24 inline-block rounded-lg" src={link} alt=""/> 
+              </div>
+            ))}
           </div>
         </div>
 
