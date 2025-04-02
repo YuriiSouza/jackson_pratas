@@ -5,6 +5,7 @@ export default async function handle(req, res) {
 
   if (method === "GET") {
     const { id } = req.query;
+    const links = [];
 
     if (id) {
       const product = await prisma.product.findUnique({
@@ -15,9 +16,35 @@ export default async function handle(req, res) {
 
       if (!product) {
         return res.status(404).json({ error: "Produto não encontrado" });
-      }
+      } else {
 
-      return res.json(product);
+        const images = await prisma.fileImagesProduct.findMany({
+          where: {
+            productId: product.id,
+          }
+        })
+  
+        for (const image of images) {
+          const bucketName = image.bucket;
+          const fileName = image.fileName;
+  
+          const link = `http://localhost:9000/${bucketName}/${fileName}`;
+  
+          links.push(link);
+        }
+  
+        const data = {
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          stock: product.stock,
+          category: product.name,
+          images: links
+        }
+  
+        return res.json(data);
+      }
     } else {
       const products = await prisma.product.findMany();
       return res.json(products);
