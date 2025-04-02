@@ -10,7 +10,8 @@ export default function ProductForm({
   price: existPrice,
   stock: exitStock,
   category: existCategory,
-  images: existImages
+  images: existImages,
+  allImagesIds: existImagesIds
 }) {
   const [name, setName] = useState(existName || '');
   const [description, setDescription] = useState(existDescription || '');
@@ -18,24 +19,34 @@ export default function ProductForm({
   const [stock, setStock] = useState(exitStock || '');
   const [category, setCategory] = useState(existCategory || '');
   const [images, setImages] = useState(existImages || []);
+
   const [allCategories, setAllCategories] = useState([]);
-  const [allImagesIds, setAllImagesIds] = useState([]);
+  const [allImagesIds, setAllImagesIds] = useState(existImagesIds || []);
   const [goToProducts, setGoToProducts] = useState(false);
+  
   const router = useRouter();
 
   useEffect(() => {
     axios.get('/api/categories')
       .then(response => setAllCategories(response.data))
       .catch(error => console.error("Erro ao buscar categorias", error));
-
-    // axios.get('/api/')
     }, []);
 
 
-  function deleteImage() {
-    
-  }
+    function deleteImage(index) {
+      console.log(index)
 
+      const id = allImagesIds[index];
+
+      console.log(id)
+
+      axios.delete(`/api/images?type=product&id=${id}`)
+        .then(() => {
+          router.
+        })
+        .catch(error => console.error("Erro ao deletar imagem:", error));
+    }
+    
   function saveProduct(ev) {
     ev.preventDefault();
 
@@ -70,8 +81,7 @@ export default function ProductForm({
         });
   
         setImages((oldImages) => [...oldImages, ...res.data.images]);
-        setAllImagesIds(res.data.ids);
-        console.log(res.data)
+        setAllImagesIds((oldIds) => [...oldIds, ...res.data.ids]);
       } catch (error) {
         console.error("Erro no upload de imagem:", error);
       }
@@ -150,10 +160,10 @@ export default function ProductForm({
               <div>Sem fotos</div>
             )}
             {!!images?.length && images.map((link, index) => (
-              <div key={link} className="relative group">
+              <div key={allImagesIds[index]} className="relative group">
                 <img className="h-24 inline-block rounded-lg" src={link} alt=""/>
                 <button 
-                  onClick={() => deleteImage(index)} 
+                  onClick={() => deleteImage(index)}
                   className="absolute top-0 right-0 p-1 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:cursor-pointer"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="size-6">
