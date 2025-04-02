@@ -18,15 +18,13 @@ export default async function handle(req, res) {
       });
     });
 
-    const {productId} = req.query;
-
-    if (!productId) {
-      return res.status(400).json({ error: "ID do produto é obrigatório" });
-    }
-
     const imageLinks = [];
+    const imageIds = [];
 
-    for (const file of files.file) {
+    const fileArray = Object.values(files).flat();
+
+
+    for (const file of fileArray) {
       const ext = file.originalFilename.split(".").pop();
       const newFilename = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
       const filePath = file.path;
@@ -48,21 +46,15 @@ export default async function handle(req, res) {
           bucket: bucketName,
           fileName: newFilename,
           originalName: file.originalFilename,
-          size: fileSize,
-          productId: parseInt(productId),
+          size: fileSize
         },
       });
 
-      // imageLinks.push({
-      //   id: savedImage.id,
-      //   url: imageUrl,
-      //   originalName: savedImage.originalName,
-      // });
-    
+      imageIds.push(savedImage.id)
       imageLinks.push(imageUrl)
     }
 
-    return res.json({ images: imageLinks });
+    return res.json({ images: imageLinks, ids: imageIds });
   } catch (error) {
     console.error("Erro ao processar upload:", error);
     return res.status(500).json({ error: "Erro interno ao salvar imagem" });

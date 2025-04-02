@@ -14,13 +14,12 @@ export default function ProductForm({
 }) {
   const [name, setName] = useState(existName || '');
   const [description, setDescription] = useState(existDescription || '');
-  const [price, setPrice] = useState(existPrice
-     || '');
+  const [price, setPrice] = useState(existPrice || '');
   const [stock, setStock] = useState(exitStock || '');
   const [category, setCategory] = useState(existCategory || '');
   const [images, setImages] = useState(existImages || []);
   const [allCategories, setAllCategories] = useState([]);
-  const [allImages, setAllImages] = useState([]);
+  const [allImagesIds, setAllImagesIds] = useState([]);
   const [goToProducts, setGoToProducts] = useState(false);
   const router = useRouter();
 
@@ -37,12 +36,12 @@ export default function ProductForm({
 
     if(id) {
       //update
-      const data = {name, description, price, stock, category};
+      const data = {name, description, price, stock, category, allImagesIds};
       axios.put('/api/products', {...data, id});
       
       setGoToProducts(true);
     } else {
-      const data = {name, description, price, stock, category};
+      const data = {name, description, price, stock, category, allImagesIds};
       axios.post('/api/products', data);
       
       setGoToProducts(true);
@@ -55,15 +54,19 @@ export default function ProductForm({
       const data = new FormData();
   
       for (const file of files) {
-        data.append("files[]", file);
+        data.append("files", file);
       }
+
+      console.log(data);
   
       try {
-        const res = await axios.post(`/api/uploadImages?id=${id}`, data, {
+        const res = await axios.post(`/api/uploadImages`, data, {
           headers: {'Content-Type': 'multiparty/form-data'}
         });
   
         setImages((oldImages) => [...oldImages, ...res.data.images]);
+        setAllImagesIds(res.data.ids);
+        console.log(res.data)
       } catch (error) {
         console.error("Erro no upload de imagem:", error);
       }
@@ -112,12 +115,12 @@ export default function ProductForm({
           <label>Categoria</label>
           <select
             value={category}
-            onChange={(ev) => setCategory(ev.target.key)}
+            onChange={(ev) => setCategory(ev.target.value)}
             required
           >
             <option className="text-blue-900" value="">Selecione uma categoria</option>
               {allCategories.map((cat) => (
-                <option key={cat.id} value={cat.name}>
+                <option key={cat.id} value={cat.id}>
                   {cat.name}
                 </option>
               ))}

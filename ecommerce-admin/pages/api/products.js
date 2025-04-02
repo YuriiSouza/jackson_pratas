@@ -26,7 +26,7 @@ export default async function handle(req, res) {
 
   if (method === "POST") {
     try {
-      const { name, description, price, stock, category } = req.body;
+      const { name, description, price, stock, category, allImagesIds } = req.body;
 
       const product = await prisma.product.create({
         data: {
@@ -34,9 +34,25 @@ export default async function handle(req, res) {
           description,
           price: parseFloat(price),
           stock: parseInt(stock),
-          category,
+          category: {
+            connect: {
+              id: category,
+            }
+          }
         },
       });
+
+      for (const image of allImagesIds) {
+        await prisma.fileImagesProduct.update({
+          where: {
+            id: image,
+          },
+          data: {
+            isTemporary: false,
+            productId: product.id,
+          },
+        });
+      }
 
       return res.status(201).json(product);
     } catch (error) {
@@ -56,13 +72,29 @@ export default async function handle(req, res) {
       const product = await prisma.product.update({
         where: { id: Number(id) },
         data: {
-          name: name,
+          name,
           description,
           price: parseFloat(price),
           stock: parseInt(stock),
-          category,
+          category: {
+            connect: {
+              id: category,  // assuming category is just the ID passed
+            }
+          },
         },
       });
+
+      for (const image of allImagesIds) {
+        await prisma.fileImagesProduct.update({
+          where: {
+            id: image,
+          },
+          data: {
+            isTemporary: false,
+            productId: product.id,
+          },
+        });
+      }
 
       return res.status(200).json(product);
     } catch (error) {
