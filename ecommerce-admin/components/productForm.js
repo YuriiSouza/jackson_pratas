@@ -2,6 +2,9 @@ import Layout from "@/components/layout";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import Spinner from "./spinner";
+import Sortable from "sortablejs";
+import { ReactSortable } from "react-sortablejs";
 
 export default function ProductForm({
   id,
@@ -23,6 +26,7 @@ export default function ProductForm({
   const [allCategories, setAllCategories] = useState([]);
   const [allImagesIds, setAllImagesIds] = useState(existImagesIds || []);
   const [goToProducts, setGoToProducts] = useState(false);
+  const [isuploading, setIsUploading] = useState(false);
   
   const router = useRouter();
 
@@ -41,9 +45,6 @@ export default function ProductForm({
       console.log(id)
 
       axios.delete(`/api/images?type=product&id=${id}`)
-        .then(() => {
-          router.
-        })
         .catch(error => console.error("Erro ao deletar imagem:", error));
     }
     
@@ -64,16 +65,20 @@ export default function ProductForm({
     }
   }
 
+  function updateImagesOrder(newOrder) {
+    setImages(newOrder);
+  }
+  
   async function uploadImages(ev) {
     const files = ev.target?.files;
     if (files?.length > 0) {
+      setIsUploading(true);
       const data = new FormData();
   
       for (const file of files) {
         data.append("files", file);
       }
 
-      console.log(data);
   
       try {
         const res = await axios.post(`/api/uploadImages`, data, {
@@ -85,6 +90,7 @@ export default function ProductForm({
       } catch (error) {
         console.error("Erro no upload de imagem:", error);
       }
+      setIsUploading(false);
     }
   }
 
@@ -155,23 +161,34 @@ export default function ProductForm({
             </div>
             <input type="file" className="hidden" onChange={uploadImages}></input>
           </label>
+              {isuploading && (
+                <div className="h-24 p-1 bg-gray-200 flex items-center">
+                  <Spinner></Spinner>
+                </div>
+              )}
           <div>
-            {!images?.length && (
-              <div>Sem fotos</div>
-            )}
-            {!!images?.length && images.map((link, index) => (
-              <div key={allImagesIds[index]} className="relative group">
-                <img className="h-24 inline-block rounded-lg" src={link} alt=""/>
-                <button 
-                  onClick={() => deleteImage(index)}
-                  className="absolute top-0 right-0 p-1 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:cursor-pointer"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                  </svg>
-                </button>
-              </div>
-              ))}
+            <ReactSortable
+              list={images}
+              className="flex flex-wrap gap-1"
+              setList={updateImagesOrder}  
+            >
+              {!images?.length && (
+                <div>Sem fotos</div>
+              )}
+              {!!images?.length && images.map((link, index) => (
+                <div key={allImagesIds[index]} className="relative group">
+                  <img className="h-24 inline-block rounded-lg" src={link} alt=""/>
+                  <button 
+                    onClick={() => deleteImage(index)}
+                    className="absolute top-0 right-0 p-1 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:cursor-pointer"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="size-6">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                  </button>
+                </div>
+                ))}
+            </ReactSortable>
           </div>
         </div>
 
