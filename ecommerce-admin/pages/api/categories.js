@@ -10,7 +10,7 @@ export default async function handle(req, res) {
       if (id) {
         const category = await prisma.category.findUnique({
           where: {
-            id: Number(id),
+            id: id,
           },
         });
 

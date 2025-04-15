@@ -167,28 +167,22 @@ export default function ProductForm({
                 </div>
               )}
           <div>
-            <ReactSortable
-              list={images}
-              className="flex flex-wrap gap-1"
-              setList={updateImagesOrder}  
-            >
-              {!images?.length && (
-                <div>Sem fotos</div>
-              )}
-              {!!images?.length && images.map((link, index) => (
-                <div key={allImagesIds[index]} className="relative group">
-                  <img className="h-24 inline-block rounded-lg" src={link} alt=""/>
-                  <button 
-                    onClick={() => deleteImage(index)}
-                    className="absolute top-0 right-0 p-1 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:cursor-pointer"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="size-6">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                  </button>
-                </div>
-                ))}
-            </ReactSortable>
+            {!images?.length && (
+              <div>Sem fotos</div>
+            )}
+            {!!images?.length && images.map((link, index) => (
+              <div key={allImagesIds[index]} className="relative group">
+                <img className="h-24 inline-block rounded-lg" src={link} alt=""/>
+                <button 
+                  onClick={() => deleteImage(index)}
+                  className="absolute top-0 right-0 p-1 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:cursor-pointer"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>
+                </button>
+              </div>
+              ))}
           </div>
         </div>
 
