@@ -57,7 +57,7 @@ export default async function handle(req, res) {
 
   if (method === "POST") {
     try {
-      const { name, description, price, stock, category, allImagesIds } = req.body;
+      const { name, description, price, stock, category, allImagesIds, properties } = req.body;
 
       const product = await prisma.product.create({
         data: {
@@ -94,7 +94,7 @@ export default async function handle(req, res) {
 
   if (method === "PUT") {
     try {
-      const { name, description, price, stock, category, allImagesIds, id } = req.body;
+      const { name, description, price, stock, category, allImagesIds, properties, id } = req.body;
 
       if (!id) {
         return res.status(400).json({ error: "ID do produto é obrigatório" });

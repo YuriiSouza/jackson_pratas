@@ -94,10 +94,32 @@ model Product {
 
 model Category {
   id        String      @id @default(uuid())
-  name      String   @unique @db.VarChar(255)
-  product   Product[]
+  name       String
+  parentId   String?
+  
+  parent     Category?   @relation("Subcategories", fields: [parentId], references: [id])
+  children   Category[]  @relation("Subcategories")
+  properties Property[]  @relation("CategoryProperties")
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  product   Product[]
+}
+
+model Property {
+  id         Int             @id @default(autoincrement())
+  name       String
+  category   Category        @relation("CategoryProperties", fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  categoryId String
+  values     PropertyValue[] @relation("PropertyToValues")
+}
+
+model PropertyValue {
+  id         Int      @id @default(autoincrement())
+  value      String
+  property   Property @relation("PropertyToValues", fields: [propertyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  propertyId Int
 }
 
 model FileImagesProduct {

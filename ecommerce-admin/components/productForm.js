@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Spinner from "./spinner";
 import Sortable from "sortablejs";
 import { ReactSortable } from "react-sortablejs";
+import categories from "@/pages/categories";
 
 export default function ProductForm({
   id,
@@ -21,6 +22,7 @@ export default function ProductForm({
   const [price, setPrice] = useState(existPrice || '');
   const [stock, setStock] = useState(exitStock || '');
   const [category, setCategory] = useState(existCategory || '');
+  const [productProperties, setProductProperties] = useState({});
   const [images, setImages] = useState(existImages || []);
 
   const [allCategories, setAllCategories] = useState([]);
@@ -53,7 +55,8 @@ export default function ProductForm({
 
     if(id) {
       //update
-      const data = {name, description, price, stock, category, allImagesIds};
+      const data = {name, description, price, stock, category, allImagesIds, 
+        properties: productProperties};
       axios.put('/api/products', {...data, id});
       
       setGoToProducts(true);
@@ -67,6 +70,14 @@ export default function ProductForm({
 
   function updateImagesOrder(newOrder) {
     setImages(newOrder);
+  }
+
+  function setProductProp(propName, value) {
+    setProductProperties(prev => {
+      const newProductProps = {...prev};
+      newProductProps[propName] = value;
+      return newProductProps
+    })
   }
   
   async function uploadImages(ev) {
@@ -91,6 +102,19 @@ export default function ProductForm({
         console.error("Erro no upload de imagem:", error);
       }
       setIsUploading(false);
+    }
+  }
+
+  const propertiesToFill = [];
+  if(allCategories.length > 0 && category) {
+    let catInfo = allCategories.find(({id}) => id ===category);
+    propertiesToFill.push(...catInfo.properties);
+
+    while(catInfo?.parent?.id) {
+      const parentCat = allCategories.find(({id}) => id === catInfo?.parent?.id)
+      propertiesToFill.push(parentCat.properties);
+
+      catInfo = parentCat;
     }
   }
 
@@ -147,7 +171,24 @@ export default function ProductForm({
               ))}
           </select>
         </div>
+      
+        {propertiesToFill.length > 0 && propertiesToFill.map(p => (
+          <div key={p.name} className="flex gap-1">
+            <div>{p.name}</div>
+            <select 
+              value={productProperties[p.name]}
+              onChange={ev => setProductProp(p.name, ev.target.value)}
+            >
+              {Array.isArray(p.values) &&
+                p.values.map(v => (
+                  <option key={v.value} value={v.value}>{v.value}</option>
+                ))
+              }
+            </select>
+          </div>
+        ))}
 
+        
         <label>
           Fotos
         </label>
