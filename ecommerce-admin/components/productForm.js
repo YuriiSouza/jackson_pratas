@@ -15,14 +15,15 @@ export default function ProductForm({
   stock: exitStock,
   category: existCategory,
   images: existImages,
-  allImagesIds: existImagesIds
+  allImagesIds: existImagesIds,
+  properties: assignedProperties
 }) {
   const [name, setName] = useState(existName || '');
   const [description, setDescription] = useState(existDescription || '');
   const [price, setPrice] = useState(existPrice || '');
   const [stock, setStock] = useState(exitStock || '');
   const [category, setCategory] = useState(existCategory || '');
-  const [productProperties, setProductProperties] = useState({});
+  const [productProperties, setProductProperties] = useState(assignedProperties || {});
   const [images, setImages] = useState(existImages || []);
 
   const [allCategories, setAllCategories] = useState([]);
@@ -40,11 +41,8 @@ export default function ProductForm({
 
 
     function deleteImage(index) {
-      console.log(index)
 
       const id = allImagesIds[index];
-
-      console.log(id)
 
       axios.delete(`/api/images?type=product&id=${id}`)
         .catch(error => console.error("Erro ao deletar imagem:", error));
@@ -55,14 +53,30 @@ export default function ProductForm({
 
     if(id) {
       //update
-      const data = {name, description, price, stock, category, allImagesIds, 
-        properties: productProperties};
-      axios.put('/api/products', {...data, id});
-      
-      setGoToProducts(true);
+      const data = {
+        name, 
+        description, 
+        price, 
+        stock, 
+        category, 
+        allImagesIds, 
+        properties: productProperties
+      };
+        axios.put('/api/products', {...data, id});
+        
+        setGoToProducts(true);
     } else {
-      const data = {name, description, price, stock, category, allImagesIds};
-      axios.post('/api/products', data);
+      const data = {
+        name, 
+        description, 
+        price, 
+        stock, 
+        category, 
+        allImagesIds,
+        properties: productProperties
+      };
+      console.log(productProperties)
+    axios.post('/api/products', data);
       
       setGoToProducts(true);
     }
@@ -156,7 +170,7 @@ export default function ProductForm({
           onChange={ev => setStock(ev.target.value)}
         />
       
-        <div className="flex flex-col pb-10 w-55">
+        <div className="flex flex-col pb-5 w-55">
           <label>Categoria</label>
           <select
             value={category}
@@ -172,20 +186,22 @@ export default function ProductForm({
           </select>
         </div>
       
-        {propertiesToFill.length > 0 && propertiesToFill.map(p => (
-          <div key={p.name} className="flex gap-1">
-            <div>{p.name}</div>
-            <select 
-              value={productProperties[p.name]}
-              onChange={ev => setProductProp(p.name, ev.target.value)}
-            >
-              {Array.isArray(p.values) &&
-                p.values.map(v => (
-                  <option key={v.value} value={v.value}>{v.value}</option>
-                ))
-              }
-            </select>
-          </div>
+        {propertiesToFill.length > 0 && propertiesToFill
+          .filter(p => p.values.length > 1) // 👈 só propriedades com mais de 1 valor
+          .map(p => (
+            <div key={p.name} className="flex flex-row pb-5 place-items-center gap-2">
+              <div>{p.name}</div>
+              <select 
+                value={productProperties[p.name] || ''}
+                onChange={ev => setProductProp(p.name, ev.target.value)}
+              >
+                {Array.isArray(p.values) && p.values.map(v => (
+                  <option key={v.value} value={v.value}>
+                    {v.value}
+                  </option>
+                ))}
+              </select>
+            </div>
         ))}
 
         

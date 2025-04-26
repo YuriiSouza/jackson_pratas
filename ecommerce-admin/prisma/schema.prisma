@@ -85,7 +85,7 @@ model Product {
   stock       Int      @default(0)
   categoryId  String
   images      FileImagesProduct[]
-
+  productPropertyValues ProductPropertyValue[]
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   createdAt   DateTime @default(now())
@@ -112,15 +112,30 @@ model Property {
   name       String
   category   Category        @relation("CategoryProperties", fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   categoryId String
+  productPropertyValues ProductPropertyValue[]
   values     PropertyValue[] @relation("PropertyToValues")
 }
 
 model PropertyValue {
   id         Int      @id @default(autoincrement())
   value      String
+  productPropertyValues ProductPropertyValue[]
   property   Property @relation("PropertyToValues", fields: [propertyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   propertyId Int
 }
+
+model ProductPropertyValue {
+  id            Int            @id @default(autoincrement())
+  product       Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId     Int
+
+  property      Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId    Int
+
+  propertyValue PropertyValue  @relation(fields: [propertyValueId], references: [id], onDelete: Cascade)
+  propertyValueId Int
+}
+
 
 model FileImagesProduct {
     id           String   @id @default(uuid())
