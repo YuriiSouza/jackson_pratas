@@ -1,10 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { s3Client } from "@/lib/s3";
+import { isAdminRequest } from "./auth/[...nextauth]";
 
 export default async function handle(req, res) {
+  await isAdminRequest(req, res);
+  
   const { type } = req.query;
 
   const { method } = req;
+
 
   if (type === "product") {
 

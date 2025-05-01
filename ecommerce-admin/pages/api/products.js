@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { s3Client } from "@/lib/s3";
+import { isAdminRequest } from "./auth/[...nextauth]";
 
 export default async function handle(req, res) {
+
+  await isAdminRequest(req, res);
+  
   const { method } = req;
 
   if (method === "GET") {
@@ -234,7 +238,6 @@ export default async function handle(req, res) {
 
         try {
           for (const image of images){
-            console.log(images)
             await s3Client.removeObject(image.bucket, image.fileName);
           }
         } catch (error) {

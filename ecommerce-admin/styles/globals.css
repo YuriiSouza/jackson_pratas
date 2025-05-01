@@ -1,50 +1,50 @@
 @import "tailwindcss";
 
-input, textarea {
-  @apply border border-2 border-gray-300 rounded-md px-1 w-full;
+@theme {
+  --color-primary: #5542F6;
+  --color-highlight: #eae8fb;
+  --color-bgGray: #fbfafd;
+}
+
+img{
+  max-height: 100%;
+}
+input, textarea, select{
+  @apply border border-gray-200 rounded-sm px-1 w-full py-2 px-3;
   @apply mb-2;
 }
-
-input:focus, textarea:focus{
+input:focus, textarea:focus, select:focus{
   @apply border-blue-900;
 }
-
-h1 {
-  @apply text-blue-900 mb-2 text-xl;
+h1{
+  @apply text-gray-800 mb-4 text-xl;
 }
-
-label {
-  @apply text-blue-900;
+label{
+  @apply text-gray-600 text-sm;
 }
-
 .btn-primary{
-  @apply bg-blue-900 text-white px-4 py-1 rounded-md;
+  @apply bg-primary text-white px-4 py-1 rounded-sm shadow-sm;
 }
-
 table.basic{
-  @apply w-full;
+  @apply w-full bg-white rounded-sm shadow-md;
 }
-
-table.basic thead tr td{
-  @apply bg-blue-100;
+table.basic thead tr td,
+table.basic thead tr th
+{
+  @apply text-sm text-gray-600 uppercase border-b border-gray-200 px-4 py-2;
 }
-
 table.basic tr td{
-  @apply border border-blue-200 p-1;
+  @apply px-4 py-1;
 }
-
 table.basic a{
-  @apply bg-blue-900 text-white text-sm py-1 rounded-md px-2 inline-flex gap-1
+  @apply px-4 rounded-sm inline-flex mx-1 items-center gap-1 text-sm py-1;
 }
-
-select {
-  @apply p-1 border border-gray-400 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-blue-700 bg-white text-gray-400 
+.btn-default, .btn-red{
+  @apply px-4 py-1 rounded-md;
 }
-
-option {
-  @apply text-gray-400
+.btn-red{
+  @apply bg-red-200 text-red-600 px-4 py-1 rounded-sm shadow-sm;
 }
-
-img {
-  max-height: 100%;
+.btn-default{
+  @apply bg-white text-gray-800 px-4 py-1 rounded-sm border border-gray-200 shadow-sm;
 }

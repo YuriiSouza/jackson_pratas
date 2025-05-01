@@ -208,7 +208,7 @@ function Categories({swal}) {
               <td>{
                 category.parentId
                   ? categories.find(cat => cat.id === category.parentId)?.name || 'Sem nome'
-                  : 'Sem categoria pai'
+                  : ''
               }</td>
               <td>
                 <button

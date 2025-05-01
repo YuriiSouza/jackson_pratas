@@ -4,10 +4,14 @@ import fs from "fs";
 import mime from "mime-types";
 import { url } from "inspector";
 import { prisma } from "@/lib/prisma";
+import { isAdminRequest } from "./auth/[...nextauth]";
 
 const bucketName = "pratasimages";
 
 export default async function handle(req, res) {
+
+  await isAdminRequest(req, res);
+  
   const form = new multiparty.Form();
 
   try {

@@ -41,12 +41,18 @@ export default function ProductForm({
 
 
     function deleteImage(index) {
-
       const id = allImagesIds[index];
-
+      console.log(id);
+    
       axios.delete(`/api/images?type=product&id=${id}`)
+        .then(() => {
+          // Remove a imagem e o ID do estado após a exclusão
+          setImages(prev => prev.filter((_, i) => i !== index));
+          setAllImagesIds(prev => prev.filter((_, i) => i !== index));
+        })
         .catch(error => console.error("Erro ao deletar imagem:", error));
     }
+    
     
   function saveProduct(ev) {
     ev.preventDefault();
@@ -170,7 +176,7 @@ export default function ProductForm({
           onChange={ev => setStock(ev.target.value)}
         />
       
-        <div className="flex flex-col pb-5 w-55">
+        <div className="flex flex-col pb-1 w-55">
           <label>Categoria</label>
           <select
             value={category}
@@ -189,18 +195,20 @@ export default function ProductForm({
         {propertiesToFill.length > 0 && propertiesToFill
           .filter(p => p.values.length > 1) // 👈 só propriedades com mais de 1 valor
           .map(p => (
-            <div key={p.name} className="flex flex-row pb-5 place-items-center gap-2">
-              <div>{p.name}</div>
-              <select 
-                value={productProperties[p.name] || ''}
-                onChange={ev => setProductProp(p.name, ev.target.value)}
-              >
-                {Array.isArray(p.values) && p.values.map(v => (
-                  <option key={v.value} value={v.value}>
-                    {v.value}
-                  </option>
-                ))}
-              </select>
+            <div key={p.name} className="">
+              <label>{p.name[0].toUpperCase()+p.name.substring(1)}</label>
+              <div>
+                <select 
+                  value={productProperties[p.name] || ''}
+                  onChange={ev => setProductProp(p.name, ev.target.value)}
+                >
+                  {Array.isArray(p.values) && p.values.map(v => (
+                    <option key={v.value} value={v.value}>
+                      {v.value}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
         ))}
 
@@ -209,7 +217,7 @@ export default function ProductForm({
           Fotos
         </label>
         <div className="mb-2 flex flex-row pb-10 place-items-center gap-4">
-          <label className="w-32 h-32 curson-pointer text-center flex items-center justify-center text-sm gap-1 text-gray-500 rounded-lg bg-gray-200">
+          <label className="w-24 h-24 cursor-pointer text-center flex flex-col items-center justify-center text-sm gap-1 text-primary rounded-sm bg-white shadow-sm border border-gray-500">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
             </svg>
@@ -227,19 +235,25 @@ export default function ProductForm({
             {!images?.length && (
               <div>Sem fotos</div>
             )}
-            {!!images?.length && images.map((link, index) => (
-              <div key={allImagesIds[index]} className="relative group">
-                <img className="h-24 inline-block rounded-lg" src={link} alt=""/>
-                <button 
+            <div className="flex flex-wrap gap-1">
+            {images?.length > 0 && images.map((link, index) => (
+              <div
+                key={allImagesIds[index]}
+                className="relative group h-24 bg-white p-1 shadow-sm rounded-sm border border-gray-200"
+              >
+                <img className="rounded-lg h-full w-auto object-contain" src={link} alt="" />
+                
+                <button
                   onClick={() => deleteImage(index)}
-                  className="absolute top-0 right-0 p-1 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:cursor-pointer"
+                  className="absolute top-1 right-1 p-1 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:cursor-pointer"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="white" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              ))}
+            ))}
+            </div>
           </div>
         </div>
 
