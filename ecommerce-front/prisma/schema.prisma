@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  username      String?         @unique
+  email         String?         @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  accounts      Account?
+  Authenticator Authenticator[]
+  sessions      Session[]
+}
+
+model Account {
+  id                       String   @id @default(cuid())
+  userId                   String   @unique
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?  @db.Text
+  access_token             String?  @db.Text
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?  @db.Text
+  session_state            String?
+  refresh_token_expires_in Int?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  user                     User     @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, credentialID])
+}
+
+model Product {
+  id                    Int                    @id @default(autoincrement())
+  name                  String                 @db.VarChar(255)
+  description           String?                @db.Text
+  price                 Decimal                @db.Decimal(10, 2)
+  stock                 Int                    @default(0)
+  categoryId            String
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  images                FileImagesProduct[]
+  category              Category               @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  productPropertyValues ProductPropertyValue[]
+
+  @@index([categoryId], map: "Product_categoryId_fkey")
+}
+
+model Category {
+  id         String     @id @default(uuid())
+  name       String
+  parentId   String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  parent     Category?  @relation("Subcategories", fields: [parentId], references: [id])
+  children   Category[] @relation("Subcategories")
+  product    Product[]
+  properties Property[] @relation("CategoryProperties")
+
+  @@index([parentId], map: "Category_parentId_fkey")
+}
+
+model Property {
+  id                    Int                    @id @default(autoincrement())
+  name                  String
+  categoryId            String
+  productPropertyValues ProductPropertyValue[]
+  category              Category               @relation("CategoryProperties", fields: [categoryId], references: [id], onDelete: Cascade)
+  values                PropertyValue[]        @relation("PropertyToValues")
+
+  @@index([categoryId], map: "Property_categoryId_fkey")
+}
+
+model PropertyValue {
+  id                    Int                    @id @default(autoincrement())
+  value                 String
+  propertyId            Int
+  productPropertyValues ProductPropertyValue[]
+  property              Property               @relation("PropertyToValues", fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId], map: "PropertyValue_propertyId_fkey")
+}
+
+model ProductPropertyValue {
+  id              Int           @id @default(autoincrement())
+  productId       Int
+  propertyId      Int
+  propertyValueId Int
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  property        Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyValue   PropertyValue @relation(fields: [propertyValueId], references: [id], onDelete: Cascade)
+
+  @@index([productId], map: "ProductPropertyValue_productId_fkey")
+  @@index([propertyId], map: "ProductPropertyValue_propertyId_fkey")
+  @@index([propertyValueId], map: "ProductPropertyValue_propertyValueId_fkey")
+}
+
+model FileImagesProduct {
+  id           String   @id @default(uuid())
+  bucket       String
+  fileName     String   @unique
+  originalName String
+  size         Int
+  productId    Int?
+  createdAt    DateTime @default(now())
+  isTemporary  Boolean  @default(true)
+  products     Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId], map: "FileImagesProduct_productId_fkey")
+}
