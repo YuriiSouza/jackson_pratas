@@ -1,5 +1,6 @@
 import Featured from "@/components/featured";
 import Header from "@/components/header";
+import NewProducts from "@/components/newProducts";
 import { prisma } from "@/lib/prisma";
 
 export async function getServerSideProps() {
@@ -19,7 +20,7 @@ export async function getServerSideProps() {
   );  
   
 
-  const serializedProduct = {
+  const serializedFeaturedProduct = {
     ...product,
     price: product?.price?.toNumber(), // Decimal → number
     createdAt: product?.createdAt?.toISOString(), // Date → string
@@ -27,17 +28,44 @@ export async function getServerSideProps() {
     images: links
   };
 
+  const products = await prisma.product.findMany({
+    take: 12,
+    include: {
+      images: true
+    },
+    orderBy: [
+      {
+        createdAt: 'desc'
+      }
+    ]
+  })
+
+  const newProducts = products.map((prod) => ({
+    ...prod,
+    price: prod.price.toNumber(),
+    createdAt: prod.createdAt.toISOString(),
+    updatedAt: prod.updatedAt.toISOString(),
+    images: prod.images.map(
+      (image) => `http://localhost:9000/${image.bucket}/${image.fileName}`
+    ),
+  }));
+
   return {
-    props: { product: serializedProduct },
+    props: { 
+      featuredProduct: serializedFeaturedProduct,
+      newProducts: newProducts
+     },
   };
 }
 
-export default function HomePage({product}) {
+export default function HomePage({featuredProduct, newProducts}) {
+  console.log(newProducts)
 
   return (
     <div>
       <Header />
-      <Featured product={product}/>
+      <Featured product={featuredProduct}/>
+      <NewProducts products={newProducts} />
     </div>
   )
 }
