@@ -10,7 +10,7 @@ import Input from "@/components/input";
 import ProductBox from "@/components/productBox";
 import { getServerSideProps } from ".";
 import NewProducts from "@/components/newProducts";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 
 const ColumnsWrapper = styled.div`
   display: grid;
@@ -87,10 +87,10 @@ export default function CartPage() {
   const [neighborhood, setNeighborhood] = useState('');
   const [state, setState] = useState('');
 
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const user = session?.user;
 
-  const handlePostalCodeChange = async (ev) => {
+  const handlePostalCodeChange = async (ev) => { //cep consult
     const cep = ev.target.value.replace(/\D/g, ''); // remove caracteres não numéricos
     setPostalCode(cep);
   
@@ -113,35 +113,38 @@ export default function CartPage() {
     }
   };
   
-  useEffect(() => {
+  useEffect(() => { //data user
     const fetchUserDetails = async () => {
-      try {
-        await axios.get('/api/user/details', {id: session?.user?.id})
+      setLoading(true);
+      await axios.post('/api/user/details', {ids:cartProducts})
         .then(response => {
           const user = response.data;
+          const address = user.address?.[0];
+          
+          setName(user.name);
+          setEmail(user.email);
+          
+          if (address) {
+            setStreetAddress(address.rua);
+            setCity(address.cidade);
+            setState(address.estado);
+            setCountry(address.pais);
+            setPostalCode(address.cep);
+            setNeighborhood(address.bairro);
+            setComplementAdress(address.complemento);
+            setNumberAdress(address.numero)
+          }
         })
         .catch(error => {
-          console.error('Erro ao buscar produtos do carrinho:', error);
-        });
-
-        setName(user.name || '');
-        setEmail(user.email || '');
-
-        if (user.address) {
-          setStreetAddress(user.address.street || '');
-          setCity(user.address.city || '');
-          setState(user.address.state || '');
-          setCountry(user.address.country || '');
-          setPostalCode(user.address.postalCode || '');
-          setNeighborhood(user.address.neighborhood || '');
-        }
-      } catch (error) {
-        console.error('Erro ao buscar dados do usuário:', error.response?.data || error.message);
-      }
+          console.error('Erro ao buscar dados do usuário:', error);
+        })
+        .finally(() => setLoading(false));
     };
-
-    fetchUserDetails();
-  }, []);
+  
+    if (status === "authenticated") {
+      fetchUserDetails();
+    }
+  }, [status]);
 
   useEffect(() => {
     if (cartProducts.length > 0) {
@@ -183,27 +186,41 @@ export default function CartPage() {
   }
 
   async function goToPayment() {
-    const cartSummary = cartProducts.reduce((acc, id) => {
+
+    const cartSummary = cartProducts.reduce((acc, id, _, arr) => {
+      if (id === null) return acc;
+    
       const existing = acc.find(item => item.productId === id);
       const product = products.find(p => p.id === id);
-      const price = product?.price || 0;
+      const priceUnit = product?.price || 0;
     
       if (existing) {
         existing.quantity += 1;
-        existing.total += price;
+        existing.total += priceUnit;
       } else {
-        acc.push({ productId: id, quantity: 1, total: price });
+        acc.push({ 
+          productId: id, 
+          name: product.name, 
+          quantity: 1, 
+          priceUnit: priceUnit
+        });
       }
+    
       return acc;
     }, []);
+    
 
     const response = await axios.post('/api/checkout', {
-      name,email,city,postalCode,streetAddress,country,
-      cartSummary, numberAdress, complementAdress, neighborhood, state
+      name, email, city, postalCode, streetAddress, country,
+      cartSummary, numberAdress, complementAdress, neighborhood, state, total
     });
-    if (response.data.url) {
-      window.location = response.data.url;
+    
+    if (response.data.URL_init_point) {
+      window.location = response.data.URL_init_point;
+
+      clearCart()
     }
+    
   }
 
   let total = 0;
@@ -283,69 +300,73 @@ export default function CartPage() {
           {!!cartProducts?.length && (
             <Box>
               <h2>Order information</h2>
-              <Input type="text"
-                     placeholder="Nome"
-                     value={name}
-                     name="name"
-                     onChange={ev => setName(ev.target.value)} />
-              <Input type="text"
-                     placeholder="Email"
-                     value={email}
-                     name="email"
-                     onChange={ev => setEmail(ev.target.value)}/>
-              <CityHolder>
-                <Input
-                  type="text"
-                  placeholder="CEP"
-                  value={postalCode}
-                  name="postalCode"
-                  onChange={handlePostalCodeChange}/>
+              {session ? (
+              <>
                 <Input type="text"
-                    placeholder="Cidade"
-                    value={city}
-                    name="city"
-                    onChange={ev => setCity(ev.target.value)} />
-              </CityHolder>
-              
-              <Input type="text"
-                     placeholder="Pais"
-                     value={country}
-                     name="country"
-                     onChange={ev => setCountry(ev.target.value)}/>
-              <Input type="text"
-                    placeholder="Número"
-                    value={numberAdress}
-                    name="numberAdress"
-                    onChange={ev => setNumberAdress(ev.target.value)} />
-              <Input type="text"
-                    placeholder="Complemento"
-                    value={complementAdress}
-                    name="complementAdress"
-                    onChange={ev => setComplementAdress(ev.target.value)} />
-              
-              <Input type="text"
-                    placeholder="Rua"
-                    value={streetAddress}
-                    name="streetAddress"
-                    onChange={ev => setStreetAddress(ev.target.value)} />
+                      placeholder="Nome"
+                      value={name}
+                      name="name"
+                      onChange={ev => setName(ev.target.value)} />
+                <Input type="text"
+                      placeholder="Email"
+                      value={email}
+                      name="email"
+                      onChange={ev => setEmail(ev.target.value)} />
+                <CityHolder>
+                  <Input type="text"
+                        placeholder="CEP"
+                        value={postalCode}
+                        name="postalCode"
+                        onChange={handlePostalCodeChange}/>
+                  <Input type="text"
+                        placeholder="Cidade"
+                        value={city}
+                        name="city"
+                        onChange={ev => setCity(ev.target.value)} />
+                </CityHolder>
 
-              <Input type="text"
-                    placeholder="Bairro"
-                    value={neighborhood}
-                    name="neighborhood"
-                    onChange={ev => setNeighborhood(ev.target.value)} />
-
-              <Input type="text"
-                    placeholder="Estado"
-                    value={state}
-                    name="state"
-                    onChange={ev => setState(ev.target.value)} />
-
-
-              <Button $black={1} $block={1}
-                      onClick={goToPayment}>
-                Continue to payment
+                <Input type="text"
+                      placeholder="País"
+                      value={country}
+                      name="country"
+                      onChange={ev => setCountry(ev.target.value)} />
+                <Input type="text"
+                      placeholder="Número"
+                      value={numberAdress}
+                      name="numberAdress"
+                      onChange={ev => setNumberAdress(ev.target.value)} />
+                <Input type="text"
+                      placeholder="Complemento"
+                      value={complementAdress}
+                      name="complementAdress"
+                      onChange={ev => setComplementAdress(ev.target.value)} />
+                <Input type="text"
+                      placeholder="Rua"
+                      value={streetAddress}
+                      name="streetAddress"
+                      onChange={ev => setStreetAddress(ev.target.value)} />
+                <Input type="text"
+                      placeholder="Bairro"
+                      value={neighborhood}
+                      name="neighborhood"
+                      onChange={ev => setNeighborhood(ev.target.value)} />
+                <Input type="text"
+                      placeholder="Estado"
+                      value={state}
+                      name="state"
+                      onChange={ev => setState(ev.target.value)} />
+                <Button $black={1} $block={1}
+                        onClick={goToPayment}>
+                  Continue to payment
+                </Button>
+              </>
+            ) : (
+              <Button $block={1} onClick={() => signIn()}>
+                Login
               </Button>
+            )
+          }
+
             </Box>
           )}
         </ColumnsWrapper>

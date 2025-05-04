@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `Address` ADD COLUMN `pais` VARCHAR(191) NOT NULL DEFAULT 'Brasil',
+    MODIFY `numero` VARCHAR(191) NULL,
+    MODIFY `bairro` VARCHAR(191) NULL;

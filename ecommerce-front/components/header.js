@@ -55,7 +55,7 @@ export default function Header() {
             <Link href="/" passHref legacyBehavior>
               <NavLink>Home</NavLink>
             </Link>
-            <Link href="/produtos" passHref legacyBehavior>
+            <Link href="/products" passHref legacyBehavior>
               <NavLink>Produtos</NavLink>
             </Link>
             <Link href="/categorias" passHref legacyBehavior>

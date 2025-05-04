@@ -20,7 +20,7 @@ model User {
   Authenticator Authenticator[]
   sessions      Session[]
   order         Order[]
-  adress        Adress[]
+  address        Address[]
 }
 
 model Account {
@@ -171,16 +171,17 @@ enum OrderStatus {
 // Model principal do pedido
 model Order {
   id             String             @id @default(cuid())
-  userId         String? 
+  userId         String 
   name           String
   email          String
   totalAmount    Decimal            @db.Decimal(10, 2)
   paymentMethod  String
   status         OrderStatus        @default(pendente)
+  id_mercado_pago String
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
-  user           User?              @relation(fields: [userId], references: [id])
+  user           User              @relation(fields: [userId], references: [id])
   items          OrderItem[]
   statusHistory  OrderStatusHistory[]
 }
@@ -201,18 +202,19 @@ model OrderItem {
 }
 
 // Endereço associado ao pedido
-model Adress {
+model Address {
   id          Int     @id @default(autoincrement())
-  userId     String  @unique
+  userId     String?  @unique
   cep         String
   rua         String
-  numero      String
+  numero      String?
   complemento String?
-  bairro      String
+  bairro      String?
   cidade      String
   estado      String
+  pais        String @default("Brasil")
 
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Histórico de mudanças de status

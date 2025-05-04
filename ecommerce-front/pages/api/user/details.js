@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: { Address: true }
+      include: { address: true }
     });
 
     if (!user) {
