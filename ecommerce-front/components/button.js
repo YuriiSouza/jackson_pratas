@@ -24,10 +24,6 @@ export const ButtonStyle = css`
     }
   `}
 
-  ${props => props.$border && css`
-    border: 1px solid ${({ theme }) => theme.colors.border};
-  `}
-
   ${props => props.$size === 'l' && css`
     font-size: 1.2rem;
     padding: 10px 20px;
@@ -36,6 +32,40 @@ export const ButtonStyle = css`
     };
   `}
 
+  ${props => props.$block && css`
+    display: block;
+    width: 100%;
+  `}
+
+  ${props => props.$white && !props.$outline && css`
+    background-color: ${({ theme }) => theme.colors.white};
+    color: ${({ theme }) => theme.colors.text};
+  `}
+
+  ${props => props.$white && props.$outline && css`
+    background-color: transparent;
+    color: ${({ theme }) => theme.colors.white};
+    border: 1px solid ${({ theme }) => theme.colors.text};
+  `}
+
+  ${props => props.$black && !props.$outline && css`
+    background-color: ${({ theme }) => theme.colors.buttonPrimary};
+    color: ${({ theme }) => theme.colors.white};
+  `}
+
+  ${props => props.$black && props.$outline && css`
+    background-color: transparent;
+    color: ${({ theme }) => theme.colors.text};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+  `}
+
+  ${props => props.$primary && !props.$outline && css`
+    background-color: ${({ theme }) => theme.colors.buttonPrimary};
+    border: 1px solid ${({ theme }) => theme.colors.border}};
+    color:#fff;
+  `}
+
+  }
 `
 
 const StyledButtton = styled.button`

@@ -1,6 +1,8 @@
 import { ThemeProvider } from "styled-components";
 import { theme } from "@/styles/themes";
 import { createGlobalStyle } from "styled-components";
+import { CartContextProvider } from "@/components/cartContext";
+import { SessionProvider } from "next-auth/react";
 
 const GlobalStyles = createGlobalStyle`
   body {
@@ -15,8 +17,12 @@ const GlobalStyles = createGlobalStyle`
 export default function App({ Component, pageProps }) {
   return (
     <ThemeProvider theme={theme}>
-      <GlobalStyles />
-      <Component {...pageProps} />
+      <SessionProvider>
+        <GlobalStyles />
+        <CartContextProvider>
+          <Component {...pageProps} />
+        </CartContextProvider>
+      </SessionProvider>
     </ThemeProvider>
   );
 }

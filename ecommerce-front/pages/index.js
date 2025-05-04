@@ -59,7 +59,6 @@ export async function getServerSideProps() {
 }
 
 export default function HomePage({featuredProduct, newProducts}) {
-  console.log(newProducts)
 
   return (
     <div>

@@ -4,6 +4,7 @@ import CartIcon from "./icon/cart";
 import Link from "next/link";
 import {useContext} from "react";
 import { CartContext } from "./cartContext";
+import Center from "./center";
 
 const ProductWrapper = styled.div`
   
@@ -58,9 +59,9 @@ const Price = styled.div`
   }
 `;
 
-export default function ProductBox({_id,title,description,price,images}) {
+export default function ProductBox({id,title,description,price,images}) {
   const {addProduct} = useContext(CartContext);
-  const url = '/product/'+_id;
+  const url = '/product/'+id;
   return (
     <ProductWrapper>
       <WhiteBox href={url}>
@@ -74,7 +75,7 @@ export default function ProductBox({_id,title,description,price,images}) {
           <Price>
             R${price}
           </Price>
-          <Button block onClick={() => addProduct(_id)} primary outline>
+          <Button $block={1} onClick={() => addProduct(id)} $primary={1} $outline={1}>
             Add to cart
           </Button>
         </PriceRow>

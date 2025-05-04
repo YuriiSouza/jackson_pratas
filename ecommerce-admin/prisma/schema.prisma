@@ -19,6 +19,8 @@ model User {
   accounts      Account?
   Authenticator Authenticator[]
   sessions      Session[]
+  order         Order[]
+  address        Address[]
 }
 
 model Account {
@@ -78,74 +80,148 @@ model Authenticator {
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(255)
-  description String?  @db.Text
-  price       Decimal  @db.Decimal(10, 2)
-  stock       Int      @default(0)
-  categoryId  String
-  images      FileImagesProduct[]
+  id                    Int                    @id @default(autoincrement())
+  name                  String                 @db.VarChar(255)
+  description           String?                @db.Text
+  price                 Decimal                @db.Decimal(10, 2)
+  stock                 Int                    @default(0)
+  categoryId            String
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  images                FileImagesProduct[]
+  category              Category               @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   productPropertyValues ProductPropertyValue[]
-  category    Category @relation(fields: [categoryId], references: [id], onUpdate: Cascade)
+  orderItem             OrderItem[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  @@index([categoryId], map: "Product_categoryId_fkey")
 }
 
 model Category {
-  id        String      @id @default(uuid())
+  id         String     @id @default(uuid())
   name       String
   parentId   String?
-  
-  parent     Category?   @relation("Subcategories", fields: [parentId], references: [id])
-  children   Category[]  @relation("Subcategories")
-  properties Property[]  @relation("CategoryProperties")
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  parent     Category?  @relation("Subcategories", fields: [parentId], references: [id])
+  children   Category[] @relation("Subcategories")
+  product    Product[]
+  properties Property[] @relation("CategoryProperties")
 
-  product   Product[]
+  @@index([parentId], map: "Category_parentId_fkey")
 }
 
 model Property {
-  id         Int             @id @default(autoincrement())
-  name       String
-  category   Category        @relation("CategoryProperties", fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  categoryId String
+  id                    Int                    @id @default(autoincrement())
+  name                  String
+  categoryId            String
   productPropertyValues ProductPropertyValue[]
-  values     PropertyValue[] @relation("PropertyToValues")
+  category              Category               @relation("CategoryProperties", fields: [categoryId], references: [id], onDelete: Cascade)
+  values                PropertyValue[]        @relation("PropertyToValues")
+
+  @@index([categoryId], map: "Property_categoryId_fkey")
 }
 
 model PropertyValue {
-  id         Int      @id @default(autoincrement())
-  value      String
+  id                    Int                    @id @default(autoincrement())
+  value                 String
+  propertyId            Int
   productPropertyValues ProductPropertyValue[]
-  property   Property @relation("PropertyToValues", fields: [propertyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  propertyId Int
+  property              Property               @relation("PropertyToValues", fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId], map: "PropertyValue_propertyId_fkey")
 }
 
 model ProductPropertyValue {
-  id            Int            @id @default(autoincrement())
-  product       Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId     Int
-
-  property      Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  propertyId    Int
-
-  propertyValue PropertyValue  @relation(fields: [propertyValueId], references: [id], onDelete: Cascade)
+  id              Int           @id @default(autoincrement())
+  productId       Int
+  propertyId      Int
   propertyValueId Int
+  product         Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  property        Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyValue   PropertyValue @relation(fields: [propertyValueId], references: [id], onDelete: Cascade)
+
+  @@index([productId], map: "ProductPropertyValue_productId_fkey")
+  @@index([propertyId], map: "ProductPropertyValue_propertyId_fkey")
+  @@index([propertyValueId], map: "ProductPropertyValue_propertyValueId_fkey")
+}
+
+model FileImagesProduct {
+  id           String   @id @default(uuid())
+  bucket       String
+  fileName     String   @unique
+  originalName String
+  size         Int
+  productId    Int?
+  createdAt    DateTime @default(now())
+  isTemporary  Boolean  @default(true)
+  products     Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId], map: "FileImagesProduct_productId_fkey")
+}
+
+// Enum com os possíveis status do pedido
+enum OrderStatus {
+  pendente
+  pago
+  enviado
+  entregue
+  cancelado
+}
+
+// Model principal do pedido
+model Order {
+  id             String             @id @default(cuid())
+  userId         String? 
+  name           String
+  email          String
+  totalAmount    Decimal            @db.Decimal(10, 2)
+  paymentMethod  String
+  status         OrderStatus        @default(pendente)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  user           User?              @relation(fields: [userId], references: [id])
+  items          OrderItem[]
+  statusHistory  OrderStatusHistory[]
+}
+
+// Itens do pedido
+model OrderItem {
+  id              Int       @id @default(autoincrement())
+  orderId         String
+  productId       Int
+  quantity        Int
+  priceAtPurchase Decimal   @db.Decimal(10, 2)
+
+  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product   @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// Endereço associado ao pedido
+model Address {
+  id          Int     @id @default(autoincrement())
+  userId      String
+  cep         String
+  rua         String
+  numero      String
+  complemento String?
+  bairro      String
+  cidade      String
+  estado      String
+
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 
-model FileImagesProduct {
-    id           String   @id @default(uuid())
-    bucket       String
-    fileName     String   @unique
-    originalName String
-    size         Int
-    productId    Int?     
-    createdAt    DateTime @default(now())
-    isTemporary  Boolean  @default(true) // 🚀 Marcação para imagens temporárias
+// Histórico de mudanças de status
+model OrderStatusHistory {
+  id         Int          @id @default(autoincrement())
+  orderId    String
+  status     OrderStatus
+  changedAt  DateTime     @default(now())
 
-    products     Product? @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  order      Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }

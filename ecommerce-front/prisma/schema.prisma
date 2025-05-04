@@ -19,6 +19,8 @@ model User {
   accounts      Account?
   Authenticator Authenticator[]
   sessions      Session[]
+  order         Order[]
+  adress        Adress[]
 }
 
 model Account {
@@ -89,6 +91,7 @@ model Product {
   images                FileImagesProduct[]
   category              Category               @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   productPropertyValues ProductPropertyValue[]
+  orderItem             OrderItem[]
 
   @@index([categoryId], map: "Product_categoryId_fkey")
 }
@@ -154,4 +157,70 @@ model FileImagesProduct {
   products     Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId], map: "FileImagesProduct_productId_fkey")
+}
+
+// Enum com os possíveis status do pedido
+enum OrderStatus {
+  pendente
+  pago
+  enviado
+  entregue
+  cancelado
+}
+
+// Model principal do pedido
+model Order {
+  id             String             @id @default(cuid())
+  userId         String? 
+  name           String
+  email          String
+  totalAmount    Decimal            @db.Decimal(10, 2)
+  paymentMethod  String
+  status         OrderStatus        @default(pendente)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  user           User?              @relation(fields: [userId], references: [id])
+  items          OrderItem[]
+  statusHistory  OrderStatusHistory[]
+}
+
+// Itens do pedido
+model OrderItem {
+  id              Int       @id @default(autoincrement())
+  orderId         String
+  productId       Int
+  quantity        Int
+  priceAtPurchase Decimal   @db.Decimal(10, 2)
+
+  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product   @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// Endereço associado ao pedido
+model Adress {
+  id          Int     @id @default(autoincrement())
+  userId     String  @unique
+  cep         String
+  rua         String
+  numero      String
+  complemento String?
+  bairro      String
+  cidade      String
+  estado      String
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Histórico de mudanças de status
+model OrderStatusHistory {
+  id         Int          @id @default(autoincrement())
+  orderId    String
+  status     OrderStatus
+  changedAt  DateTime     @default(now())
+
+  order      Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
