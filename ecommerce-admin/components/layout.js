@@ -2,15 +2,30 @@ import { useSession, signIn, signOut } from "next-auth/react"
 import Nav from "./nav";
 import {useState} from "react";
 import Logo from "./logo";
+import axios from "axios";
 
 export default function Layout({children}) {
   const [showNav,setShowNav] = useState(false);
   const { data: session } = useSession();
+
+  async function logout() {
+    await router.push('/');
+    await signOut();
+  }
+
+  async function login() {
+    if(session) {
+      logout()
+    } else {
+      await signIn('google')
+    }
+  }
+
   if (!session) {
     return (
       <div className="bg-primary w-screen h-screen flex items-center">
         <div className="text-center w-full">
-          <button onClick={() => signIn('google')} className="bg-white p-2 px-4 rounded-lg">Login with Google</button>
+          <button onClick={() => login()} className="bg-white p-2 px-4 rounded-lg">Login with Google</button>
         </div>
       </div>
     );

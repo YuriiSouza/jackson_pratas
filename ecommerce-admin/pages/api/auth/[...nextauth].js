@@ -3,7 +3,7 @@ import NextAuth, { getServerSession } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import { prisma } from '@/lib/prisma'
 
-const adminEmails = ['yuripeixoto1112@gmail.com']
+const adminEmails = ['yuripeixoto1112@gmail.com', ]
 
 export const authOptions = {
   adapter: PrismaAdapter(prisma),
@@ -14,14 +14,14 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    session: ({ session, token, user}) => {
-      
-      if (adminEmails.includes(session?.user?.email)) {
-        return session;
+    async signIn({ user }) {
+      if (adminEmails.includes(user.email)) {
+        return true;
       } else {
         return false;
       }
-
+    },
+    async session({ session, token, user }) {
       return session;
     },
   }
@@ -29,12 +29,12 @@ export const authOptions = {
 
 export default NextAuth(authOptions);
 
-export async function isAdminRequest(req, res) {
-  const session = await getServerSession(req,res,authOptions);
+// export async function isAdminRequest(req, res) {
+//   const session = await getServerSession(req,res,authOptions);
 
-  if (!adminEmails.includes(session?.user?.email)) {
-    res.status(401);
-    res.end();
-    throw 'not admin';
-  }
-}
+//   if (!adminEmails.includes(session?.user?.email)) {
+//     res.status(401);
+//     res.end();
+//     throw 'not admin';
+//   }
+// }

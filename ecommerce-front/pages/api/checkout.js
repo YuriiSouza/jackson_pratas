@@ -1,5 +1,3 @@
-// pages/api/checkout.js
-
 import { MercadoPagoConfig, Order, Preference } from "mercadopago";
 import { prisma } from '@/lib/prisma';
 import { getSession } from "next-auth/react";
@@ -106,11 +104,6 @@ export default async function handler(req, res) {
   try {
     const response = await preference.create({
       body: {
-        back_urls: {
-          success: "http://localhost:3000/account",
-          failure: "http://localhost:3000/cart",
-          pending: "http://localhost:3000/account"
-        },
         items: cartSummary.map(item => ({
           id: item.id,
           title: item.name,
@@ -131,9 +124,17 @@ export default async function handler(req, res) {
           date_created: user.createdAt,
           last_purchase: user.order?.createdAt || null
         },
+        back_urls: {
+          success: "https://05f8-2804-d59-962e-be00-5a78-6c71-9cb2-4d7f.ngrok-free.app/orders",
+          failure: "https://05f8-2804-d59-962e-be00-5a78-6c71-9cb2-4d7f.ngrok-free.app",
+          pending: "https://05f8-2804-d59-962e-be00-5a78-6c71-9cb2-4d7f.ngrok-free.app"
+        },
         total_amount: totalAmount,
+        notification_url: "https://05f8-2804-d59-962e-be00-5a78-6c71-9cb2-4d7f.ngrok-free.app/api/notification-mp",
       }
     });
+
+    console.log(response)
   
     const id_MP = response.id;
   
@@ -164,13 +165,10 @@ export default async function handler(req, res) {
     });
 
     const URL_init_point = response.init_point;
-
-    console.log(response)
     return res.status(200).json({ URL_init_point });
 
   } catch (error) {
-    return res.status(401)
-    console.error("Erro ao criar preferência ou pedido:", error);
+    return res.status(500).json({ error: "Erro ao criar preferência ou pedido" });
   }
   
 }

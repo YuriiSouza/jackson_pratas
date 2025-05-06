@@ -1,9 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { isAdminRequest } from "./auth/[...nextauth]";
 
 export default async function handle(req, res) {
-  await isAdminRequest(req, res);
   
   const { method } = req;
 
